@@ -2,7 +2,6 @@
 Module handles the visual component of the chessboard and pieces
 """
 import pygame
-from pygame.constants import *
 import sys
 
 # Initialize pygame display
