@@ -1,3 +1,1 @@
-import tkinter
-
-tkinter._test()
+import pygame
