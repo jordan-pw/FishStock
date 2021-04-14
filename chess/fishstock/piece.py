@@ -43,7 +43,7 @@ def get_straight_moves(self,board):
         possible_y = self.y 
         while(True):
             possible_y += i
-            if chk_move(self.color, self.x, possible_y, board)
+            if chk_move(self.color, self.x, possible_y, board):
                 legal_moves.add((self.x, possible_y))
                 if board.array[self.x, possible_y].color != color: # If there is an enemy piece
                     break
@@ -55,7 +55,7 @@ def get_straight_moves(self,board):
         possible_x = self.x 
         while(True):
             possible_x += i
-            if chk_move(self.color, possible_x, self.y, board)
+            if chk_move(self.color, possible_x, self.y, board):
                 legal_moves.add((possible_x, self.y))
                 if board.array[possible_x, self.y].color != color: # If there is an enemy piece
                     break
@@ -74,19 +74,18 @@ def get_diag_moves(self,board):
     """
     legal_moves = set()
 
-    for movement in [(-1, -1), (-1, 1), (1, 1), (1, -1)]
+    for movement in [(-1, -1), (-1, 1), (1, 1), (1, -1)]:
         possible_x = self.x 
         possible_y = self.y
         while(True):
             possible_x += movement[0]
             possible_y += movement[1]
-            if chk_move(self.color, possible_x, possible_y, board)
+            if chk_move(self.color, possible_x, possible_y, board):
                 legal_moves.add((possible_x, possible_y))
                 if board.array[possible_x, possible_y].color != color: # If there is an enemy piece
                     break
                 else: # If the move is out of bounds or friendly piece
                     break
-                
     return legal_moves
 
 class Piece:
@@ -98,17 +97,67 @@ class Piece:
         self.y = y
         self.color = color
 
-"""
-class Pawn(Piece):
 
+class Pawn(Piece):
+    def __init__(self, color, x, y):
+        super().__init(color, x, y)
+        
+    def generate_moves(self, board):
+        """
+        Generates the possible legal moves, not accounting for check
+        Args:
+            Instance of the legal moves
+        Returns:
+            legal_moves - set containing tuples (x,y) of coordinates of each valid move
+        """
+        legal_moves = set()
+
+        direction = {"w": -1, "b": 1}
+        col = self.color
+
+        possible_y = self.y
+        possible_y += direction[color]
+        """
+        Cannot use the chk_move method, as the pawn cannot capture piece in occupied
+        squares directly ahead of it
+        """
+        piece = board.array[self.x][possible_y]
+        if piece == None:
+            # Empty square
+            legal_moves.add((self.x, possible_y))
+        if (y < 0 or y > 7) or (piece is not None):
+            # Out of bounds or occupied, so check if the diagonally adjacent squares contain an enemy piece
+            if (board.array[self.x+1].color != self.color):
+                legal_moves.add((self.x+1, possible_y))
+            else:
+                if (board.array[self.x-1].color != self.color):
+                    legal_moves.add((self.x-1, possible_y))
+        return legal_moves
+                
 class Rook(Piece):
+    def __init__(self, color, x, y):
+        super().__init(color, x, y)
+
+    def generate_moves(self, board):
+        return self.get_straight_moves(board)
+
 
 class Bishop(Piece):
+    def __init__(self, color, x, y):
+        super().__init(color, x, y)
 
+    def generate_moves(self, board):
+        return self.get_diag_moves(board)
+"""
 class Knight(Piece):
 
 class King(Piece):
-
-class Queen(Piece):
 """
+class Queen(Piece):
+    def __init__(self, color, x, y):
+        super().__init(color, x, y)
+
+    def generate_moves(self, board):
+        return self.get_diag_moves.union(self.get_straight_moves)
+
 
