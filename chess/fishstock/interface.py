@@ -17,6 +17,9 @@ rect = surface.get_rect()
 rect = rect.move((0, 0))
 screen.blit(surface, rect)
 
+# TODO
+# to draw the pieces' sprites, multiply there x and y by 100, and add the offset of the borders of the board sprite
+
 # Main loop
 run = True
 while run:
