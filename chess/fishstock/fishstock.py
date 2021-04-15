@@ -1,7 +1,49 @@
 """
 Module handles the user input, decision making, and AI
 """
+from board import *
+import pygame
+import sys
 
+# Initialize pygame display
+width, height = 826, 826
+board_offset = 13 # Size of padding on board sprite
+screen = pygame.display.set_mode((width, height))
+
+# Load in images
+surface = pygame.image.load('resources\\Board2.png').convert()
+
+# Render images
+rect = surface.get_rect()
+rect = rect.move((0, 0))
+screen.blit(surface, rect)
+
+
+
+def draw_pieces(board):
+    pieces = board.array
+    for i in range(len(pieces)):
+        for j in range(len(pieces[i])):
+            the_piece = pieces[i][j]
+            if the_piece is not None:
+                posx = pieces[i][j].x
+                posy = pieces[i][j].y
+                psprite = pieces[i][j].sprite
+                screen.blit(psprite, (board_offset+(posy*100), board_offset+(posx*100)))
+
+the_board = Board()
+# Main loop
+run = True
+while run:
+    for event in pygame.event.get():
+        # pylint: disable=no-member
+        if event.type == pygame.QUIT:
+            run = False
+            pygame.quit()
+            sys.exit()
+        # pylint: enable=no-member
+    pygame.display.update()
+    draw_pieces(the_board)
 
 # Board evaluation initiliazitaion
 pawn_map = [

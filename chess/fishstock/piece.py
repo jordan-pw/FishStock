@@ -1,7 +1,7 @@
 """
 Will contain an object for each piece
 """
-
+import pygame
 
 def chk_move(color, x, y, board):
     """
@@ -88,11 +88,12 @@ def get_diag_moves(self,board):
                     break
     return legal_moves
 
-class Piece:
+class Piece(pygame.sprite.Sprite):
     """
     Basic piece object, stores color and position
     """
     def __init__(self,color,x,y):
+        super().__init__()
         self.x = x
         self.y = y
         self.color = color
@@ -100,19 +101,24 @@ class Piece:
 
 class Pawn(Piece):
     def __init__(self, color, x, y):
-        super().__init(color, x, y)
-        
+        super().__init__(color, x, y)
+        if (color == 'w'):
+            self.sprite = pygame.image.load('resources\\wpawn.png').convert()
+        else: self.sprite = pygame.image.load('resources\\bpawn.png').convert()
+
+
     def generate_moves(self, board):
         """
         Generates the possible legal moves, not accounting for check
         Args:
             Instance of the legal moves
         Returns:
-            legal_moves - set containing tuples (x,y) of coordinates of each valid move
+            legal_moves - set containing tuples (x,y) of coordinates of 
+            each valid move
         """
         legal_moves = set()
 
-        direction = {"w": -1, "b": 1}
+        direction = {'w': -1, 'b': 1}
         col = self.color
 
         possible_y = self.y
@@ -136,26 +142,68 @@ class Pawn(Piece):
                 
 class Rook(Piece):
     def __init__(self, color, x, y):
-        super().__init(color, x, y)
+        super().__init__(color, x, y)
+        if (color == 'w'):
+            self.sprite = pygame.image.load('resources\\wrook.png').convert()
+        else: self.sprite = pygame.image.load('resources\\brook.png').convert()
 
     def generate_moves(self, board):
         return self.get_straight_moves(board)
 
-
 class Bishop(Piece):
     def __init__(self, color, x, y):
-        super().__init(color, x, y)
+        super().__init__(color, x, y)
+        if (color == 'w'):
+            self.sprite = pygame.image.load('resources\\wbishop.png').convert()
+        else: self.sprite = pygame.image.load('resources\\bbishop.png').convert()
 
     def generate_moves(self, board):
         return self.get_diag_moves(board)
-"""
+
 class Knight(Piece):
+    def __init__(self, color, x, y):
+        super().__init__(color, x, y)
+        if (color == 'w'):
+            self.sprite = pygame.image.load('resources\\wknight.png').convert()
+        else: self.sprite = pygame.image.load('resources\\bknight.png').convert()
+
+    def generate_moves(self, board):
+        legal_moves = set()
+        # Possible offset of the moves the knight can make from his starting position - starting(x,y) + (x, y)
+        possible_moves = [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, -1), (2, 1), (-2, -1), (-2, 1)]
+
+        for move in possible_moves:
+            possible_x = self.x + possible_moves[0]
+            possible_y = self.y + possible_moves[1]
+            if chk_move(self.color, possible_x, possible_y, board):
+                legal_moves.add((possible_x, possible_y))
+        return legal_moves
 
 class King(Piece):
-"""
+    def __init__(self, color, x, y):
+        super().__init__(color, x, y)
+        if (color == 'w'):
+            self.sprite = pygame.image.load('resources\\wking.png').convert()
+        else: self.sprite = pygame.image.load('resources\\bking.png').convert()
+
+    def generate_moves(self, board):
+        legal_moves = set()
+        # Possible offset of the moves the king can make from his starting position
+        possible_moves = [(-1, -1), (-1, 1), (1, -1), (1, -1), (1, 0), (-1, 0), (0, -1), (0, 1)]
+
+        for move in possible_moves:
+            possible_x = self.x + possible_moves[0]
+            possible_y = self.y + possible_moves[1]
+            if chk_move(self.color, possible_x, possible_y, board):
+                legal_moves.add((possible_x, possible_y))
+        return legal_moves
+
 class Queen(Piece):
     def __init__(self, color, x, y):
-        super().__init(color, x, y)
+        super().__init__(color, x, y)
+        if (color == 'w'):
+            self.sprite = pygame.image.load('resources\\wqueen.png')
+        else: self.sprite = pygame.image.load('resources\\bqueen.png')
 
     def generate_moves(self, board):
         return self.get_diag_moves.union(self.get_straight_moves)
