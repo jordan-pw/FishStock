@@ -29,9 +29,21 @@ def draw_pieces(board):
                 posx = pieces[i][j].x
                 posy = pieces[i][j].y
                 psprite = pieces[i][j].sprite
-                screen.blit(psprite, (board_offset+(posy*100), board_offset+(posx*100)))
+                screen.blit(psprite, (board_offset+(posx*100), board_offset+(posy*100)))
+
 
 the_board = Board()
+all = the_board.array
+
+for row in all:
+    for item in row:
+        if item is not None:
+            moves = item.generate_moves(the_board)
+            print(item)
+            for move in moves:
+                print(move[0], move[1])
+        else: print('x, x')
+
 # Main loop
 run = True
 while run:

@@ -10,12 +10,11 @@ def chk_move(color, x, y, board):
     valid, if the coordinate is out of bounds or contains a friend, the
     move is invalid
     """
-
-    piece = board.array[x][y]
     if x < 0 or x > 7 or y < 0 or y > 7:
         # Out of bounds
         return False
-
+    
+    piece = board.array[x][y]
     if piece == None:
         # Empty space
         return True
@@ -45,10 +44,12 @@ def get_straight_moves(self,board):
             possible_y += i
             if chk_move(self.color, self.x, possible_y, board):
                 legal_moves.add((self.x, possible_y))
-                if board.array[self.x, possible_y].color != color: # If there is an enemy piece
+                if board.array[self.x, possible_y].color != self.color: # If there is an enemy piece
                     break
                 else: # If the move is out of bounds or friendly piece
                     break
+            else:
+                break
 
     # Horizontal moves
     for i in(-1, 1):
@@ -57,10 +58,12 @@ def get_straight_moves(self,board):
             possible_x += i
             if chk_move(self.color, possible_x, self.y, board):
                 legal_moves.add((possible_x, self.y))
-                if board.array[possible_x, self.y].color != color: # If there is an enemy piece
+                if board.array[possible_x, self.y].color != self.color: # If there is an enemy piece
                     break
                 else: # If the move is out of bounds or friendly piece
                     break
+            else:
+                break
 
     return legal_moves
 
@@ -82,10 +85,12 @@ def get_diag_moves(self,board):
             possible_y += movement[1]
             if chk_move(self.color, possible_x, possible_y, board):
                 legal_moves.add((possible_x, possible_y))
-                if board.array[possible_x, possible_y].color != color: # If there is an enemy piece
+                if board.array[possible_x, possible_y].color != self.color: # If there is an enemy piece
                     break
                 else: # If the move is out of bounds or friendly piece
                     break
+            else:
+                break
     return legal_moves
 
 class Piece(pygame.sprite.Sprite):
@@ -122,21 +127,25 @@ class Pawn(Piece):
         col = self.color
 
         possible_y = self.y
-        possible_y += direction[color]
+        possible_y += direction[col]
         """
         Cannot use the chk_move method, as the pawn cannot capture piece in occupied
         squares directly ahead of it
         """
+        if (possible_y < 0 or possible_y > 7):
+            return None
         piece = board.array[self.x][possible_y]
         if piece == None:
             # Empty square
             legal_moves.add((self.x, possible_y))
-        if (y < 0 or y > 7) or (piece is not None):
+        if (possible_y < 0 or possible_y > 7) or (piece != None):
             # Out of bounds or occupied, so check if the diagonally adjacent squares contain an enemy piece
-            if (board.array[self.x+1].color != self.color):
+            enemy1 = board.array[self.x+1][possible_y]
+            enemy2 = board.array[self.x-1][possible_y]
+            if ((enemy1 is not None) and (enemy1.color != col)):
                 legal_moves.add((self.x+1, possible_y))
             else:
-                if (board.array[self.x-1].color != self.color):
+                if ((enemy2 is not None) and (enemy2.color != col)):
                     legal_moves.add((self.x-1, possible_y))
         return legal_moves
                 
@@ -148,7 +157,7 @@ class Rook(Piece):
         else: self.sprite = pygame.image.load('resources\\brook.png').convert()
 
     def generate_moves(self, board):
-        return self.get_straight_moves(board)
+        return get_straight_moves(self, board)
 
 class Bishop(Piece):
     def __init__(self, color, x, y):
@@ -158,7 +167,7 @@ class Bishop(Piece):
         else: self.sprite = pygame.image.load('resources\\bbishop.png').convert()
 
     def generate_moves(self, board):
-        return self.get_diag_moves(board)
+        return get_diag_moves(self,board)
 
 class Knight(Piece):
     def __init__(self, color, x, y):
@@ -173,8 +182,8 @@ class Knight(Piece):
         possible_moves = [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, -1), (2, 1), (-2, -1), (-2, 1)]
 
         for move in possible_moves:
-            possible_x = self.x + possible_moves[0]
-            possible_y = self.y + possible_moves[1]
+            possible_x = self.x + move[0]
+            possible_y = self.y + move[1]
             if chk_move(self.color, possible_x, possible_y, board):
                 legal_moves.add((possible_x, possible_y))
         return legal_moves
@@ -192,8 +201,8 @@ class King(Piece):
         possible_moves = [(-1, -1), (-1, 1), (1, -1), (1, -1), (1, 0), (-1, 0), (0, -1), (0, 1)]
 
         for move in possible_moves:
-            possible_x = self.x + possible_moves[0]
-            possible_y = self.y + possible_moves[1]
+            possible_x = self.x + move[0]
+            possible_y = self.y + move[1]
             if chk_move(self.color, possible_x, possible_y, board):
                 legal_moves.add((possible_x, possible_y))
         return legal_moves
@@ -206,6 +215,6 @@ class Queen(Piece):
         else: self.sprite = pygame.image.load('resources\\bqueen.png')
 
     def generate_moves(self, board):
-        return self.get_diag_moves.union(self.get_straight_moves)
+        return get_diag_moves(self,board).union(get_straight_moves(self,board))
 
 
