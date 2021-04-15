@@ -35,6 +35,7 @@ def draw_pieces(board):
 the_board = Board()
 all = the_board.array
 
+
 for row in all:
     for item in row:
         if item is not None:
@@ -43,6 +44,7 @@ for row in all:
             for move in moves:
                 print(move[0], move[1])
         else: print('x, x')
+
 
 # Main loop
 run = True

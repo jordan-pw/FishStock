@@ -44,7 +44,7 @@ def get_straight_moves(self,board):
             possible_y += i
             if chk_move(self.color, self.x, possible_y, board):
                 legal_moves.add((self.x, possible_y))
-                if board.array[self.x, possible_y].color != self.color: # If there is an enemy piece
+                if (board.array[self.x][possible_y] != None) and (board.array[self.x][possible_y].color != self.color): # If there is an enemy piece
                     break
                 else: # If the move is out of bounds or friendly piece
                     break
@@ -58,7 +58,7 @@ def get_straight_moves(self,board):
             possible_x += i
             if chk_move(self.color, possible_x, self.y, board):
                 legal_moves.add((possible_x, self.y))
-                if board.array[possible_x, self.y].color != self.color: # If there is an enemy piece
+                if (board.array[possible_x][self.y] != None) and (board.array[possible_x][self.y].color != self.color): # If there is an enemy piece
                     break
                 else: # If the move is out of bounds or friendly piece
                     break
@@ -85,7 +85,7 @@ def get_diag_moves(self,board):
             possible_y += movement[1]
             if chk_move(self.color, possible_x, possible_y, board):
                 legal_moves.add((possible_x, possible_y))
-                if board.array[possible_x, possible_y].color != self.color: # If there is an enemy piece
+                if (board.array[possible_x][possible_y] != None) and (board.array[possible_x][possible_y].color != self.color): # If there is an enemy piece
                     break
                 else: # If the move is out of bounds or friendly piece
                     break
@@ -133,15 +133,19 @@ class Pawn(Piece):
         squares directly ahead of it
         """
         if (possible_y < 0 or possible_y > 7):
-            return None
+            return legal_moves
         piece = board.array[self.x][possible_y]
         if piece == None:
             # Empty square
             legal_moves.add((self.x, possible_y))
-        if (possible_y < 0 or possible_y > 7) or (piece != None):
+        if piece != None:
             # Out of bounds or occupied, so check if the diagonally adjacent squares contain an enemy piece
-            enemy1 = board.array[self.x+1][possible_y]
-            enemy2 = board.array[self.x-1][possible_y]
+            if (self.x+1 <= 7): # Check if the piece you're looking at is off the board
+                enemy1 = board.array[self.x+1][possible_y]
+            else: enemy1 = None
+            if (self.x-1 >= 0): # Check if the piece you're looking at is off the board
+                enemy2 = board.array[self.x-1][possible_y]
+            else: enemy2 = None
             if ((enemy1 is not None) and (enemy1.color != col)):
                 legal_moves.add((self.x+1, possible_y))
             else:
