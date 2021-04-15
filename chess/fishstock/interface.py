@@ -1,6 +1,7 @@
 """
 Module handles the visual component of the chessboard and pieces
 """
+
 import pygame
 import sys
 
