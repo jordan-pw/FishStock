@@ -23,3 +23,10 @@ class Board:
                  Queen('w', 3, 7), King('w', 4, 7), Bishop('w', 5, 7), 
                  Knight('w', 6, 7), Rook('w', 7, 7)],
         ]
+
+    def print_colors(self):
+        for row in self.array:
+            for piece in row:
+                if piece != None:
+                    print(piece.color , end=' ')
+            print('\n')
