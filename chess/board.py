@@ -25,6 +25,9 @@ class Board:
         ]
 
     def print_colors(self):
+        """
+        Prints out all of the colors of the pieces on the board
+        """
         for row in self.array:
             for piece in row:
                 if piece != None:

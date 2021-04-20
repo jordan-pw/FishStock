@@ -35,7 +35,6 @@ def draw_pieces(board):
 the_board = Board()
 all = the_board.array
 
-the_board.print_colors()
 
 for row in all:
     for item in row:
@@ -45,7 +44,6 @@ for row in all:
             for move in moves:
                 print(move[0], move[1])
         else: print('x, x')
-
 
 # Main loop
 run = True
