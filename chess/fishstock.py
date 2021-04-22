@@ -45,7 +45,6 @@ for row in all:
                 print(move[0], move[1])
         else: print('x, x')
 
-
 # Main loop
 run = True
 while run:
@@ -56,8 +55,9 @@ while run:
             pygame.quit()
             sys.exit()
         # pylint: enable=no-member
-    pygame.display.update()
     draw_pieces(the_board)
+    pygame.display.update()
+    
 
 # Board evaluation initiliazitaion
 pawn_map = [
