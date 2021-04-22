@@ -55,8 +55,9 @@ while run:
             pygame.quit()
             sys.exit()
         # pylint: enable=no-member
-    pygame.display.update()
     draw_pieces(the_board)
+    pygame.display.update()
+    
 
 # Board evaluation initiliazitaion
 pawn_map = [
