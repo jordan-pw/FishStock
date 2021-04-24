@@ -41,8 +41,12 @@ for row in all:
         if item is not None:
             moves = item.generate_moves(the_board)
             print(item)
+            """
             for move in moves:
-                print(move[0], move[1])
+                print(it)
+            """
+            for attack in item.attacked_by:
+                print(attack[0], attack[1])
         else: print('x, x')
 
 # Main loop
@@ -57,6 +61,11 @@ while run:
         # pylint: enable=no-member
     draw_pieces(the_board)
     pygame.display.update()
+    black_check = the_board.black_king.attacked_by
+    white_check = the_board.white_king.attacked_by
+    if (len(white_check)) or (len(black_check)):
+        pygame.display.set_caption('Chess! (Check)')
+    else: pygame.display.set_caption('Chess!')
     
 
 # Board evaluation initiliazitaion

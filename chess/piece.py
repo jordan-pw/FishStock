@@ -3,7 +3,7 @@ Will contain an object for each piece
 """
 import pygame
 
-def chk_move(color, x, y, board):
+def chk_move(self, color, x, y, board):
     """
     Checks if a move is valid, if the coordinate on the board is empty,
     the move is valid, if the coordinate contains an enemy, the move is
@@ -20,6 +20,7 @@ def chk_move(color, x, y, board):
         return True
     else:
         if piece.color != color:
+            piece.attacked_by.add((self.x, self.y))
             # Enemy piece
             return True
         if piece.color == color:
@@ -42,9 +43,10 @@ def get_straight_moves(self,board):
         possible_y = self.y 
         while(True):
             possible_y += i
-            if chk_move(self.color, self.x, possible_y, board):
+            if chk_move(self, self.color, self.x, possible_y, board):
                 if (board.array[possible_y][self.x] != None):
                     legal_moves.add((self.x, possible_y))
+                    self.attacking.add((self.x, possible_y))
                     break
                 else:
                     legal_moves.add((self.x, possible_y))
@@ -56,12 +58,13 @@ def get_straight_moves(self,board):
         possible_x = self.x 
         while(True):
             possible_x += i
-            if chk_move(self.color, possible_x, self.y, board):
+            if chk_move(self, self.color, possible_x, self.y, board):
                 if (board.array[self.y][possible_x] != None): # If there is an enemy piece
                     legal_moves.add((possible_x, self.y))
+                    self.attacking.add((possible_x, self.y))
                     break
-                else: # If the move is out of bounds or friendly piece
-                    break
+                else: # If board is empty here
+                    legal_moves.add((possible_x, self.y))
             else:
                 break
 
@@ -83,11 +86,12 @@ def get_diag_moves(self,board):
         while(True):
             possible_x += movement[0]
             possible_y += movement[1]
-            if chk_move(self.color, possible_x, possible_y, board):
+            if chk_move(self, self.color, possible_x, possible_y, board):
                 if (board.array[possible_y][possible_x] != None): # If there is an enemy piece
                     legal_moves.add((possible_x, possible_y))
+                    self.attacking.add((possible_x, possible_y))
                     break
-                else: # If the move is out of bounds or friendly piece
+                else: # If the board is empty here
                     legal_moves.add((possible_x, possible_y))
             else:
                 break
@@ -102,6 +106,8 @@ class Piece(pygame.sprite.Sprite):
         self.x = x
         self.y = y
         self.color = color
+        self.attacking = set()
+        self.attacked_by = set()
 
 class Pawn(Piece):
     def __init__(self, color, x, y):
@@ -144,8 +150,10 @@ class Pawn(Piece):
 
         # Check if the two spaces contain an enemy
         if ((enemy1 is not None) and (enemy1.color != col)):
+            self.attacking.add((self.x+1, possible_y))
             legal_moves.add((self.x+1, possible_y))
         if ((enemy2 is not None) and (enemy2.color != col)):
+            self.attacking.add((self.x-1, possible_y))
             legal_moves.add((self.x-1, possible_y))
         return legal_moves
 
@@ -185,8 +193,10 @@ class Knight(Piece):
         for move in possible_moves:
             possible_x = self.x + move[0]
             possible_y = self.y + move[1]
-            if chk_move(self.color, possible_x, possible_y, board):
+            if chk_move(self, self.color, possible_x, possible_y, board):
                 legal_moves.add((possible_x, possible_y))
+                if (board.array[possible_y][possible_x] is not None) and (board.array[possible_y][possible_x].color != self.color):
+                    self.attacking.add((possible_x, possible_y))
         return legal_moves
 
 class King(Piece):
@@ -204,8 +214,10 @@ class King(Piece):
         for move in possible_moves:
             possible_x = self.x + move[0]
             possible_y = self.y + move[1]
-            if chk_move(self.color, possible_x, possible_y, board):
+            if chk_move(self, self.color, possible_x, possible_y, board):
                 legal_moves.add((possible_x, possible_y))
+                if (board.array[possible_y][possible_x] is not None) and (board.array[possible_y][possible_x].color != self.color):
+                    self.attacking.add((possible_x, possible_y))
         return legal_moves
 
 class Queen(Piece):
