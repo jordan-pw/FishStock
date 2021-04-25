@@ -47,9 +47,7 @@ def update_moves():
     for row in all:
         for item in row:
             if item is not None:
-                item.generate_moves(the_board)
-    for row in the_board.black_attack_board:
-        print(row)
+                item.generate_legal_moves(the_board)
 
 
 # Main loop

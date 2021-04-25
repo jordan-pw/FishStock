@@ -2,6 +2,7 @@
 Will contain an object for each piece
 """
 import pygame
+import copy
 
 def chk_move(self, color, x, y, board):
     """
@@ -34,10 +35,10 @@ def get_straight_moves(self,board):
     Args:
         Instance of chess board
     Returns:
-        legal_moves - set containing tuples (x,y) of coordinates of each valid move
+        plegal_moves - set containing tuples (x,y) of coordinates of each valid move
     """
     # Vertical moves
-    legal_moves = set()
+    plegal_moves = set()
 
     for i in(-1, 1):
         possible_y = self.y 
@@ -45,17 +46,12 @@ def get_straight_moves(self,board):
             possible_y += i
 
             if chk_move(self, self.color, self.x, possible_y, board):
-                if self.color == 'w': # Set all attacked positions
-                    board.white_attack_board[possible_y][self.x] = 1
-                else: 
-                    board.black_attack_board[possible_y][self.x] = 1
-
                 if (board.board_[possible_y][self.x] != None):
-                    legal_moves.add((self.x, possible_y))
+                    plegal_moves.add((self.x, possible_y))
                     self.attacking.add((self.x, possible_y))
                     break
                 else:
-                    legal_moves.add((self.x, possible_y))
+                    plegal_moves.add((self.x, possible_y))
             else:
                 break
 
@@ -66,21 +62,16 @@ def get_straight_moves(self,board):
             possible_x += i
 
             if chk_move(self, self.color, possible_x, self.y, board):
-                if self.color == 'w': # Set all attacked positions
-                    board.white_attack_board[self.y][possible_x] = 1
-                else: 
-                    board.black_attack_board[self.y][possible_x] = 1
-
                 if (board.board_[self.y][possible_x] != None): # If there is an enemy piece
-                    legal_moves.add((possible_x, self.y))
+                    plegal_moves.add((possible_x, self.y))
                     self.attacking.add((possible_x, self.y))
                     break
                 else: # If board is empty here
-                    legal_moves.add((possible_x, self.y))
+                    plegal_moves.add((possible_x, self.y))
             else:
                 break
 
-    return legal_moves
+    return plegal_moves
 
 def get_diag_moves(self,board):
     """
@@ -88,9 +79,9 @@ def get_diag_moves(self,board):
     Args:
         Instance of chess board
     Returns:
-        legal_moves - set containing tuples (x,y) of coordinates of each valid move
+        plegal_moves - set containing tuples (x,y) of coordinates of each valid move
     """
-    legal_moves = set()
+    plegal_moves = set()
 
     for movement in [(-1, -1), (-1, 1), (1, 1), (1, -1)]:
         possible_x = self.x 
@@ -99,20 +90,15 @@ def get_diag_moves(self,board):
             possible_x += movement[0]
             possible_y += movement[1]
             if chk_move(self, self.color, possible_x, possible_y, board):
-                if self.color == 'w': # Set all attacked positions
-                    board.white_attack_board[possible_y][possible_x] = 1
-                else: 
-                    board.black_attack_board[possible_y][possible_x] = 1
-
                 if (board.board_[possible_y][possible_x] != None): # If there is an enemy piece
-                    legal_moves.add((possible_x, possible_y))
+                    plegal_moves.add((possible_x, possible_y))
                     self.attacking.add((possible_x, possible_y))
                     break
                 else: # If the board is empty here
-                    legal_moves.add((possible_x, possible_y))
+                    plegal_moves.add((possible_x, possible_y))
             else:
                 break
-    return legal_moves
+    return plegal_moves
 
 class Piece(pygame.sprite.Sprite):
     """
@@ -125,11 +111,30 @@ class Piece(pygame.sprite.Sprite):
         self.color = color
         self.attacking = set()
         self.attacked_by = set()
+        self.legal_moves = set()
 
-    def generate_legal_moves(self, moveset):
-        legal_moves = set()
+    def generate_legal_moves(self, board):
+        """
+        Generates the legal moveset of any given piece
+        Legal meaning not putting the King into check
+        """
+        pseudo_moves = self.generate_moves(board)
         
-            
+        for move in pseudo_moves:
+            testpiece = self
+            testpiece.x = move[0]
+            testpiece.y = move[1]
+            testboard = copy.deepcopy(board)
+            print(self)
+            print(testboard.board_[self.y][self.x])
+            testboard.board_[self.y][self.x] = None
+            testboard.board_[move[1]][move[0]] = testpiece
+            if self.color == 'w':
+                if board.white_king.is_in_check == False:
+                    self.legal_moves.add((testpiece.x, testpiece.y))
+            if self.color == 'b':
+                if board.black_king.is_in_check == False:
+                    self.legal_moves.add((testpiece.x, testpiece.y))
 
 class Pawn(Piece):
     def __init__(self, color, x, y):
@@ -145,10 +150,10 @@ class Pawn(Piece):
         Args:
             Instance of the legal moves
         Returns:
-            legal_moves - set containing tuples (x,y) of coordinates of 
+            plegal_moves - set containing tuples (x,y) of coordinates of 
             each valid move
         """
-        legal_moves = set()
+        plegal_moves = set()
 
         direction = {'w': -1, 'b': 1}
         col = self.color
@@ -160,39 +165,25 @@ class Pawn(Piece):
         """
         piece = board.board_[possible_y][self.x]
         if (possible_y >= 0 or possible_y <= 7) and piece == None:
-            if self.color == 'w': # Set all attacked positions
-                board.white_attack_board[possible_y][self.x] = 1
-            else: 
-                board.black_attack_board[possible_y][self.x] = 1
-
-            legal_moves.add((self.x, possible_y))
+            plegal_moves.add((self.x, possible_y))
 
         # Out of bounds or occupied, so check if the diagonally adjacent squares contain an enemy piece
         if (self.x+1 <= 7): # Check if the piece you're looking at is off the board
             enemy1 = board.board_[possible_y][self.x+1]
-
-            if self.color == 'w': # Set all attacked positions
-                board.white_attack_board[possible_y][self.x+1] = 1
-            else: 
-                board.black_attack_board[possible_y][self.x+1] = 1
         else: enemy1 = None
         if (self.x-1 >= 0): # Check if the piece you're looking at is off the board
             enemy2 = board.board_[possible_y][self.x-1]
-
-            if self.color == 'w': # Set all attacked positions
-                board.white_attack_board[possible_y][self.x-1] = 1
-            else: 
-                board.black_attack_board[possible_y][self.x-1] = 1
         else: enemy2 = None
 
         # Check if the two spaces contain an enemy
         if ((enemy1 is not None) and (enemy1.color != col)):
             self.attacking.add((self.x+1, possible_y))
-            legal_moves.add((self.x+1, possible_y))
+            plegal_moves.add((self.x+1, possible_y))
         if ((enemy2 is not None) and (enemy2.color != col)):
             self.attacking.add((self.x-1, possible_y))
-            legal_moves.add((self.x-1, possible_y))
-        return legal_moves
+            plegal_moves.add((self.x-1, possible_y))
+        return plegal_moves
+
 
     
 class Rook(Piece):
@@ -223,7 +214,7 @@ class Knight(Piece):
         else: self.sprite = pygame.image.load('resources\\bknight.png').convert()
 
     def generate_moves(self, board):
-        legal_moves = set()
+        plegal_moves = set()
         # Possible offset of the moves the knight can make from his starting position - starting(x,y) + (x, y)
         possible_moves = [(-1, 2), (1, 2), (-1, -2), (1, -2), (2, -1), (2, 1), (-2, -1), (-2, 1)]
 
@@ -231,10 +222,10 @@ class Knight(Piece):
             possible_x = self.x + move[0]
             possible_y = self.y + move[1]
             if chk_move(self, self.color, possible_x, possible_y, board):
-                legal_moves.add((possible_x, possible_y))
+                plegal_moves.add((possible_x, possible_y))
                 if (board.board_[possible_y][possible_x] is not None) and (board.board_[possible_y][possible_x].color != self.color):
                     self.attacking.add((possible_x, possible_y))
-        return legal_moves
+        return plegal_moves
 
 class King(Piece):
     def __init__(self, color, x, y):
@@ -245,7 +236,7 @@ class King(Piece):
         self.is_in_check = False
 
     def generate_moves(self, board):
-        legal_moves = set()
+        plegal_moves = set()
         # Possible offset of the moves the king can make from his starting position
         possible_moves = [(-1, -1), (-1, 1), (1, -1), (1, 1), (1, 0), (-1, 0), (0, -1), (0, 1)]
 
@@ -253,10 +244,14 @@ class King(Piece):
             possible_x = self.x + move[0]
             possible_y = self.y + move[1]
             if chk_move(self, self.color, possible_x, possible_y, board):
-                legal_moves.add((possible_x, possible_y))
+                plegal_moves.add((possible_x, possible_y))
                 if (board.board_[possible_y][possible_x] is not None) and (board.board_[possible_y][possible_x].color != self.color):
                     self.attacking.add((possible_x, possible_y))
-        return legal_moves
+
+        if len(self.attacked_by):
+            self.is_in_check = True
+        else: self.is_in_check = False
+        return plegal_moves
 
 class Queen(Piece):
     def __init__(self, color, x, y):
