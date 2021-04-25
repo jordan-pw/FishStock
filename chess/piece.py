@@ -14,7 +14,7 @@ def chk_move(self, color, x, y, board):
         # Out of bounds
         return False
     
-    piece = board.array[y][x]
+    piece = board.board_[y][x]
     if piece == None:
         # Empty Space
         return True
@@ -43,8 +43,14 @@ def get_straight_moves(self,board):
         possible_y = self.y 
         while(True):
             possible_y += i
+
             if chk_move(self, self.color, self.x, possible_y, board):
-                if (board.array[possible_y][self.x] != None):
+                if self.color == 'w': # Set all attacked positions
+                    board.white_attack_board[possible_y][self.x] = 1
+                else: 
+                    board.black_attack_board[possible_y][self.x] = 1
+
+                if (board.board_[possible_y][self.x] != None):
                     legal_moves.add((self.x, possible_y))
                     self.attacking.add((self.x, possible_y))
                     break
@@ -58,8 +64,14 @@ def get_straight_moves(self,board):
         possible_x = self.x 
         while(True):
             possible_x += i
+
             if chk_move(self, self.color, possible_x, self.y, board):
-                if (board.array[self.y][possible_x] != None): # If there is an enemy piece
+                if self.color == 'w': # Set all attacked positions
+                    board.white_attack_board[self.y][possible_x] = 1
+                else: 
+                    board.black_attack_board[self.y][possible_x] = 1
+
+                if (board.board_[self.y][possible_x] != None): # If there is an enemy piece
                     legal_moves.add((possible_x, self.y))
                     self.attacking.add((possible_x, self.y))
                     break
@@ -87,7 +99,12 @@ def get_diag_moves(self,board):
             possible_x += movement[0]
             possible_y += movement[1]
             if chk_move(self, self.color, possible_x, possible_y, board):
-                if (board.array[possible_y][possible_x] != None): # If there is an enemy piece
+                if self.color == 'w': # Set all attacked positions
+                    board.white_attack_board[possible_y][possible_x] = 1
+                else: 
+                    board.black_attack_board[possible_y][possible_x] = 1
+
+                if (board.board_[possible_y][possible_x] != None): # If there is an enemy piece
                     legal_moves.add((possible_x, possible_y))
                     self.attacking.add((possible_x, possible_y))
                     break
@@ -108,6 +125,11 @@ class Piece(pygame.sprite.Sprite):
         self.color = color
         self.attacking = set()
         self.attacked_by = set()
+
+    def generate_legal_moves(self, moveset):
+        legal_moves = set()
+        
+            
 
 class Pawn(Piece):
     def __init__(self, color, x, y):
@@ -136,16 +158,31 @@ class Pawn(Piece):
         Cannot use the chk_move method, as the pawn cannot capture piece in occupied
         squares directly ahead of it
         """
-        piece = board.array[possible_y][self.x]
+        piece = board.board_[possible_y][self.x]
         if (possible_y >= 0 or possible_y <= 7) and piece == None:
+            if self.color == 'w': # Set all attacked positions
+                board.white_attack_board[possible_y][self.x] = 1
+            else: 
+                board.black_attack_board[possible_y][self.x] = 1
+
             legal_moves.add((self.x, possible_y))
 
         # Out of bounds or occupied, so check if the diagonally adjacent squares contain an enemy piece
         if (self.x+1 <= 7): # Check if the piece you're looking at is off the board
-            enemy1 = board.array[possible_y][self.x+1]
+            enemy1 = board.board_[possible_y][self.x+1]
+
+            if self.color == 'w': # Set all attacked positions
+                board.white_attack_board[possible_y][self.x+1] = 1
+            else: 
+                board.black_attack_board[possible_y][self.x+1] = 1
         else: enemy1 = None
         if (self.x-1 >= 0): # Check if the piece you're looking at is off the board
-            enemy2 = board.array[possible_y][self.x-1]
+            enemy2 = board.board_[possible_y][self.x-1]
+
+            if self.color == 'w': # Set all attacked positions
+                board.white_attack_board[possible_y][self.x-1] = 1
+            else: 
+                board.black_attack_board[possible_y][self.x-1] = 1
         else: enemy2 = None
 
         # Check if the two spaces contain an enemy
@@ -195,7 +232,7 @@ class Knight(Piece):
             possible_y = self.y + move[1]
             if chk_move(self, self.color, possible_x, possible_y, board):
                 legal_moves.add((possible_x, possible_y))
-                if (board.array[possible_y][possible_x] is not None) and (board.array[possible_y][possible_x].color != self.color):
+                if (board.board_[possible_y][possible_x] is not None) and (board.board_[possible_y][possible_x].color != self.color):
                     self.attacking.add((possible_x, possible_y))
         return legal_moves
 
@@ -205,6 +242,7 @@ class King(Piece):
         if (color == 'w'):
             self.sprite = pygame.image.load('resources\\wking.png').convert()
         else: self.sprite = pygame.image.load('resources\\bking.png').convert()
+        self.is_in_check = False
 
     def generate_moves(self, board):
         legal_moves = set()
@@ -216,7 +254,7 @@ class King(Piece):
             possible_y = self.y + move[1]
             if chk_move(self, self.color, possible_x, possible_y, board):
                 legal_moves.add((possible_x, possible_y))
-                if (board.array[possible_y][possible_x] is not None) and (board.array[possible_y][possible_x].color != self.color):
+                if (board.board_[possible_y][possible_x] is not None) and (board.board_[possible_y][possible_x].color != self.color):
                     self.attacking.add((possible_x, possible_y))
         return legal_moves
 

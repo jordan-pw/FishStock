@@ -18,10 +18,13 @@ rect = surface.get_rect()
 rect = rect.move((0, 0))
 screen.blit(surface, rect)
 
-
+# Set variables
+black_check = False # True when king is in check
+white_check = False
+turn = 'w' # w when White's move, b when Black's move
 
 def draw_pieces(board):
-    pieces = board.array
+    pieces = board.board_
     for i in range(len(pieces)):
         for j in range(len(pieces[i])):
             the_piece = pieces[i][j]
@@ -33,21 +36,21 @@ def draw_pieces(board):
 
 
 the_board = Board()
-all = the_board.array
+all = the_board.board_
 
 
-for row in all:
-    for item in row:
-        if item is not None:
-            moves = item.generate_moves(the_board)
-            print(item)
-            """
-            for move in moves:
-                print(it)
-            """
-            for attack in item.attacked_by:
-                print(attack[0], attack[1])
-        else: print('x, x')
+def update_moves():
+    """
+    For every piece on the board, generates all pseudo-legal moves
+    This updates the attack boards for both black and white
+    """
+    for row in all:
+        for item in row:
+            if item is not None:
+                item.generate_moves(the_board)
+    for row in the_board.black_attack_board:
+        print(row)
+
 
 # Main loop
 run = True
@@ -61,11 +64,20 @@ while run:
         # pylint: enable=no-member
     draw_pieces(the_board)
     pygame.display.update()
-    black_check = the_board.black_king.attacked_by
-    white_check = the_board.white_king.attacked_by
-    if (len(white_check)) or (len(black_check)):
-        pygame.display.set_caption('Chess! (Check)')
-    else: pygame.display.set_caption('Chess!')
+
+    # Gameplay loop
+    chk_black_check = the_board.black_king.attacked_by
+    chk_white_check = the_board.white_king.attacked_by
+    turn_string = "White's turn"
+    if (len(chk_white_check)) or (len(chk_black_check)):
+        pygame.display.set_caption('Chess! (Check) ' + turn_string)
+    else: pygame.display.set_caption('Chess! ' + turn_string)
+    if turn == 'w':
+        update_moves()
+        turn_string = "White's turn"
+    else: # Black's turn
+        update_moves()
+        turn_string = "Black's turn"
     
 
 # Board evaluation initiliazitaion
