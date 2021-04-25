@@ -100,18 +100,20 @@ def get_diag_moves(self,board):
                 break
     return plegal_moves
 
-class Piece(pygame.sprite.Sprite):
+class Piece():
     """
     Basic piece object, stores color and position
     """
     def __init__(self,color,x,y):
-        super().__init__()
         self.x = x
         self.y = y
         self.color = color
         self.attacking = set()
         self.attacked_by = set()
         self.legal_moves = set()
+    
+    def generate_moves(self, board):
+        return set()
 
     def generate_legal_moves(self, board):
         """
@@ -121,27 +123,32 @@ class Piece(pygame.sprite.Sprite):
         pseudo_moves = self.generate_moves(board)
         
         for move in pseudo_moves:
-            testpiece = self
+            # Copy the current piece
+            testpiece = copy.copy(self)
             testpiece.x = move[0]
             testpiece.y = move[1]
+            # Copy the board
             testboard = copy.deepcopy(board)
-            print(self)
-            print(testboard.board_[self.y][self.x])
+            # Remove the current piece from the board
             testboard.board_[self.y][self.x] = None
+            # Move it to the test location
             testboard.board_[move[1]][move[0]] = testpiece
+
+            # Now check if that moves results in the king going into check
             if self.color == 'w':
-                if board.white_king.is_in_check == False:
+                if testboard.white_king.is_in_check == False:
                     self.legal_moves.add((testpiece.x, testpiece.y))
             if self.color == 'b':
-                if board.black_king.is_in_check == False:
+                if testboard.black_king.is_in_check == False:
                     self.legal_moves.add((testpiece.x, testpiece.y))
+            return self.legal_moves
 
 class Pawn(Piece):
     def __init__(self, color, x, y):
         super().__init__(color, x, y)
         if (color == 'w'):
-            self.sprite = pygame.image.load('resources\\wpawn.png').convert()
-        else: self.sprite = pygame.image.load('resources\\bpawn.png').convert()
+            self.sprite = 'resources\\wpawn.png'
+        else: self.sprite = 'resources\\bpawn.png'
 
 
     def generate_moves(self, board):
@@ -190,8 +197,8 @@ class Rook(Piece):
     def __init__(self, color, x, y):
         super().__init__(color, x, y)
         if (color == 'w'):
-            self.sprite = pygame.image.load('resources\\wrook.png').convert()
-        else: self.sprite = pygame.image.load('resources\\brook.png').convert()
+            self.sprite = 'resources\\wrook.png'
+        else: self.sprite = 'resources\\brook.png'
 
     def generate_moves(self, board):
         return get_straight_moves(self, board)
@@ -200,8 +207,8 @@ class Bishop(Piece):
     def __init__(self, color, x, y):
         super().__init__(color, x, y)
         if (color == 'w'):
-            self.sprite = pygame.image.load('resources\\wbishop.png').convert()
-        else: self.sprite = pygame.image.load('resources\\bbishop.png').convert()
+            self.sprite = 'resources\\wbishop.png'
+        else: self.sprite = 'resources\\bbishop.png'
 
     def generate_moves(self, board):
         return get_diag_moves(self,board)
@@ -210,8 +217,8 @@ class Knight(Piece):
     def __init__(self, color, x, y):
         super().__init__(color, x, y)
         if (color == 'w'):
-            self.sprite = pygame.image.load('resources\\wknight.png').convert()
-        else: self.sprite = pygame.image.load('resources\\bknight.png').convert()
+            self.sprite = 'resources\\wknight.png'
+        else: self.sprite = 'resources\\bknight.png'
 
     def generate_moves(self, board):
         plegal_moves = set()
@@ -231,8 +238,8 @@ class King(Piece):
     def __init__(self, color, x, y):
         super().__init__(color, x, y)
         if (color == 'w'):
-            self.sprite = pygame.image.load('resources\\wking.png').convert()
-        else: self.sprite = pygame.image.load('resources\\bking.png').convert()
+            self.sprite = 'resources\\wking.png'
+        else: self.sprite = 'resources\\bking.png'
         self.is_in_check = False
 
     def generate_moves(self, board):
@@ -257,8 +264,8 @@ class Queen(Piece):
     def __init__(self, color, x, y):
         super().__init__(color, x, y)
         if (color == 'w'):
-            self.sprite = pygame.image.load('resources\\wqueen.png')
-        else: self.sprite = pygame.image.load('resources\\bqueen.png')
+            self.sprite = 'resources\\wqueen.png'
+        else: self.sprite = 'resources\\bqueen.png'
 
     def generate_moves(self, board):
         return get_diag_moves(self,board).union(get_straight_moves(self,board))

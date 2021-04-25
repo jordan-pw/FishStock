@@ -31,7 +31,7 @@ def draw_pieces(board):
             if the_piece is not None:
                 posx = pieces[i][j].x
                 posy = pieces[i][j].y
-                psprite = pieces[i][j].sprite
+                psprite = pygame.image.load(pieces[i][j].sprite).convert()
                 screen.blit(psprite, (board_offset+(posx*100), board_offset+(posy*100)))
 
 
@@ -48,7 +48,15 @@ def update_moves():
         for item in row:
             if item is not None:
                 item.generate_legal_moves(the_board)
+                if item.color == 'w':
+                    print("White's move:")
+                if item.color == 'b':
+                    print("Black's move:") 
+                print(item)
+                for move in item.legal_moves:
+                    print(move[0], move[1])
 
+update_moves()
 
 # Main loop
 run = True
@@ -71,10 +79,10 @@ while run:
         pygame.display.set_caption('Chess! (Check) ' + turn_string)
     else: pygame.display.set_caption('Chess! ' + turn_string)
     if turn == 'w':
-        update_moves()
+        #update_moves()
         turn_string = "White's turn"
     else: # Black's turn
-        update_moves()
+        #update_moves()
         turn_string = "Black's turn"
     
 
