@@ -3,7 +3,8 @@ Will contain an object for each piece
 """
 import pygame
 import copy
-
+import sys
+sys.setrecursionlimit(20000)
 
 def chk_move(self, color, x, y, board):
     """
@@ -140,19 +141,30 @@ class Piece():
             testboard.board_[self.y][self.x] = None
             # Move it to the test location
             testboard.board_[move[1]][move[0]] = testpiece
+            # Set testboard king check status
+            board.black_king.check_status()
+            board.white_king.check_status()
+
+            testboard.black_king.is_in_check = board.black_king.is_in_check
+            testboard.white_king.is_in_check = board.white_king.is_in_check
 
             # Generate the pseudo-legal moves for the testboard pieces
             # This entire method is extremely slow, will need to optimize
             for row in testboard.board_:
                 for item in row:
                     if item is not None:
-                        item.generate_legal_moves(testboard)
+                        item.generate_moves(testboard)
 
+            # Now set the king status again
+            testboard.black_king.check_status()
+            testboard.white_king.check_status()
+            
             # Now check if that moves results in the king going into check
             if self.color == 'w':
                 if (testboard.white_king.is_in_check == False):
                     self.legal_moves.add((testpiece.x, testpiece.y))
             if self.color == 'b':
+                print(board.black_king.is_in_check)
                 if (testboard.black_king.is_in_check == False):
                     self.legal_moves.add((testpiece.x, testpiece.y))
         return self.legal_moves
@@ -268,11 +280,13 @@ class King(Piece):
                 plegal_moves.add((possible_x, possible_y))
                 if (board.board_[possible_y][possible_x] is not None) and (board.board_[possible_y][possible_x].color != self.color):
                     self.attacking.add((possible_x, possible_y))
+        return plegal_moves
 
-        if len(self.attacked_by):
+    def check_status(self):
+        if len(self.attacked_by) != 0:
             self.is_in_check = True
         else: self.is_in_check = False
-        return plegal_moves
+        
 
 class Queen(Piece):
     def __init__(self, color, x, y):

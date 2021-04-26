@@ -1,6 +1,7 @@
 """
 Will contain an object with an array of pieces
 """
+from piece import Piece, Pawn, Rook, Knight, Bishop, Queen, King
 
 class Board:
     """
@@ -36,5 +37,3 @@ class Board:
                 if piece != None:
                     print(piece.color , end=' ')
             print('\n')
-
-from piece import Piece, Pawn, Rook, Knight, Bishop, Queen, King

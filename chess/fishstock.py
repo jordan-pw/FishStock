@@ -38,6 +38,12 @@ def draw_pieces(board):
 the_board = Board()
 all = the_board.board_
 
+def initialize_moves():
+    for row in all:
+        for item in row:
+            if item is not None:
+                item.generate_moves(the_board)
+
 def update_moves():
     """
     For every piece on the board, generates all pseudo-legal moves
@@ -55,6 +61,7 @@ def update_moves():
                 for move in item.legal_moves:
                     print(move[0], move[1])
 
+initialize_moves()
 update_moves()
 
 # Main loop
@@ -74,7 +81,7 @@ while run:
     chk_black_check = the_board.black_king.attacked_by
     chk_white_check = the_board.white_king.attacked_by
     turn_string = "White's turn"
-    if (len(chk_white_check)) or (len(chk_black_check)):
+    if (the_board.black_king.is_in_check) or (the_board.white_king.is_in_check):
         pygame.display.set_caption('Chess! (Check) ' + turn_string)
     else: pygame.display.set_caption('Chess! ' + turn_string)
     if turn == 'w':
