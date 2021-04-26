@@ -3,8 +3,6 @@ Will contain an object for each piece
 """
 import pygame
 import copy
-import sys
-sys.setrecursionlimit(20000)
 
 def chk_move(self, color, x, y, board):
     """
@@ -114,11 +112,6 @@ class Piece():
         self.attacked_by = set()
         self.legal_moves = set()
     
-    def __copy__(self):
-        cls = self.__class__
-        new = cls.__new__(cls)
-        new.__dict__.update(self.__dict__)
-        return new
 
     def generate_moves(self, board):
         return set()
@@ -142,29 +135,33 @@ class Piece():
             # Move it to the test location
             testboard.board_[move[1]][move[0]] = testpiece
             # Set testboard king check status
-            board.black_king.check_status()
-            board.white_king.check_status()
 
-            testboard.black_king.is_in_check = board.black_king.is_in_check
-            testboard.white_king.is_in_check = board.white_king.is_in_check
-
+    
             # Generate the pseudo-legal moves for the testboard pieces
             # This entire method is extremely slow, will need to optimize
+            # This is to check and see if the move results in the king being taken out of check
             for row in testboard.board_:
                 for item in row:
                     if item is not None:
+                        item.attacked_by = set()
+                        item.generate_moves(testboard)
+            # Since this resets the attacked_by status of white pieces,
+            # We have to do it again for black
+            # This is terrible
+            for row in testboard.board_:
+                for item in row:
+                    if (item is not None) and (item.color == 'b'):
                         item.generate_moves(testboard)
 
             # Now set the king status again
             testboard.black_king.check_status()
             testboard.white_king.check_status()
-            
+
             # Now check if that moves results in the king going into check
             if self.color == 'w':
                 if (testboard.white_king.is_in_check == False):
                     self.legal_moves.add((testpiece.x, testpiece.y))
             if self.color == 'b':
-                print(board.black_king.is_in_check)
                 if (testboard.black_king.is_in_check == False):
                     self.legal_moves.add((testpiece.x, testpiece.y))
         return self.legal_moves
@@ -283,7 +280,7 @@ class King(Piece):
         return plegal_moves
 
     def check_status(self):
-        if len(self.attacked_by) != 0:
+        if len(self.attacked_by):
             self.is_in_check = True
         else: self.is_in_check = False
         
