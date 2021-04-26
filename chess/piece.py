@@ -134,9 +134,7 @@ class Piece():
             testboard.board_[self.y][self.x] = None
             # Move it to the test location
             testboard.board_[move[1]][move[0]] = testpiece
-            # Set testboard king check status
 
-    
             # Generate the pseudo-legal moves for the testboard pieces
             # This entire method is extremely slow, will need to optimize
             # This is to check and see if the move results in the king being taken out of check

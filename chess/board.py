@@ -21,8 +21,6 @@ class Board:
             [None for x in range(8)],
             [None for x in range(8)],
             [None for x in range(8)],
-            [None for x in range(8)],
-            [None for x in range(8)],
             [Pawn('w', i, 6) for i in range(8)],
             [Rook('w', 0, 7), Knight('w', 1, 7), Bishop('w', 2, 7),
                  Queen('w', 3, 7), self.white_king, Bishop('w', 5, 7), 
