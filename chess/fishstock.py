@@ -38,7 +38,6 @@ def draw_pieces(board):
 the_board = Board()
 all = the_board.board_
 
-
 def update_moves():
     """
     For every piece on the board, generates all pseudo-legal moves

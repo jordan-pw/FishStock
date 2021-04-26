@@ -4,6 +4,7 @@ Will contain an object for each piece
 import pygame
 import copy
 
+
 def chk_move(self, color, x, y, board):
     """
     Checks if a move is valid, if the coordinate on the board is empty,
@@ -112,6 +113,12 @@ class Piece():
         self.attacked_by = set()
         self.legal_moves = set()
     
+    def __copy__(self):
+        cls = self.__class__
+        new = cls.__new__(cls)
+        new.__dict__.update(self.__dict__)
+        return new
+
     def generate_moves(self, board):
         return set()
 
@@ -134,14 +141,21 @@ class Piece():
             # Move it to the test location
             testboard.board_[move[1]][move[0]] = testpiece
 
+            # Generate the pseudo-legal moves for the testboard pieces
+            # This entire method is extremely slow, will need to optimize
+            for row in testboard.board_:
+                for item in row:
+                    if item is not None:
+                        item.generate_legal_moves(testboard)
+
             # Now check if that moves results in the king going into check
             if self.color == 'w':
-                if testboard.white_king.is_in_check == False:
+                if (testboard.white_king.is_in_check == False):
                     self.legal_moves.add((testpiece.x, testpiece.y))
             if self.color == 'b':
-                if testboard.black_king.is_in_check == False:
+                if (testboard.black_king.is_in_check == False):
                     self.legal_moves.add((testpiece.x, testpiece.y))
-            return self.legal_moves
+        return self.legal_moves
 
 class Pawn(Piece):
     def __init__(self, color, x, y):
