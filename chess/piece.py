@@ -150,24 +150,30 @@ class Piece():
                     if item is not None:
                         item.attacked_by = set()
                         item.generate_moves(testboard)
-            # Since this resets the attacked_by status of white pieces,
-            # We have to do it again for black
+            # Since this resets the attacked_by status of pieces
+            # We have to do it again
             # This is terrible
             for row in testboard.board_:
                 for item in row:
-                    if (item is not None) and (item.color == 'b'):
+                    if item is not None:
                         item.generate_moves(testboard)
 
             # Now set the king status again
-            testboard.black_king.check_status()
-            testboard.white_king.check_status()
+            testboard.bottom_king.check_status()
+            testboard.top_king.check_status()
 
+            if testboard.top_king.color == 'w':
+                white_king = testboard.top_king
+                black_king = testboard.bottom_king
+            if testboard.top_king.color == 'b':
+                white_king = testboard.bottom_king
+                black_king = testboard.top_king
             # Now check if that moves results in the king going into check
             if self.color == 'w':
-                if (testboard.white_king.is_in_check == False):
+                if (white_king.is_in_check == False):
                     self.legal_moves.add((testpiece.x, testpiece.y))
             if self.color == 'b':
-                if (testboard.black_king.is_in_check == False):
+                if (black_king.is_in_check == False):
                     self.legal_moves.add((testpiece.x, testpiece.y))
         return self.legal_moves
 
@@ -228,9 +234,11 @@ class Pawn(Piece):
 
         # Check if the two spaces contain an enemy
         if ((enemy1 is not None) and (enemy1.color != col)):
+            enemy1.attacked_by.add((self.x, self.y))
             self.attacking.add((self.x+1, possible_y))
             plegal_moves.add((self.x+1, possible_y))
         if ((enemy2 is not None) and (enemy2.color != col)):
+            enemy2.attacked_by.add((self.x, self.y))
             self.attacking.add((self.x-1, possible_y))
             plegal_moves.add((self.x-1, possible_y))
         return plegal_moves

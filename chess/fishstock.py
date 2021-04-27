@@ -22,8 +22,8 @@ white_check = False
 selected = False # True when a piece is selected
 selection = None # Currently selected piece
 turn = 'w' # w when White's move, b when Black's move
-playerc = 'b'
-computerc = 'w'
+playerc = 'w'
+computerc = 'b'
 color = (255, 0, 0)
 
 def draw_pieces(board):
@@ -118,16 +118,10 @@ def update_moves():
     for row in all:
         for item in row:
             if item is not None:
+                item.attacked_by = set()
                 item.generate_legal_moves(the_board)
-                if item.color == 'w':
-                    print("White's move:")
-                if item.color == 'b':
-                    print("Black's move:") 
-                print(item)
-                for move in item.legal_moves:
-                    print(move[0], move[1])
-    the_board.black_king.check_status()
-    the_board.white_king.check_status()
+    the_board.bottom_king.check_status()
+    the_board.top_king.check_status()
 
 initialize_moves()
 update_moves()
@@ -166,11 +160,11 @@ while run:
     pygame.display.update()
 
     # Gameplay loop
-    chk_black_check = the_board.black_king.attacked_by
-    chk_white_check = the_board.white_king.attacked_by
+    chk_black_check = the_board.bottom_king.attacked_by
+    chk_white_check = the_board.top_king.attacked_by
     # Generate caption
     turn_string = "White's turn"
-    if (the_board.black_king.is_in_check) or (the_board.white_king.is_in_check):
+    if (the_board.bottom_king.is_in_check) or (the_board.top_king.is_in_check):
         pygame.display.set_caption('Chess! (Check) ' + turn_string)
     else: pygame.display.set_caption('Chess! ' + turn_string)
     if turn == 'w':
