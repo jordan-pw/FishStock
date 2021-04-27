@@ -77,7 +77,7 @@ def check_square():
     """
     x, y = pygame.mouse.get_pos()
     selection = the_board.board_[y // 100][x // 100]
-    if selection is not None and selection.color == playerc:
+    if selection is not None: #and selection.color == playerc:
         return selection
     if selection is None:
         return None
