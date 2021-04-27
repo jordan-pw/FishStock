@@ -108,6 +108,7 @@ class Piece():
         self.x = x
         self.y = y
         self.color = color
+        self.hasmoved = False
         self.attacking = set()
         self.attacked_by = set()
         self.legal_moves = set()
@@ -176,10 +177,15 @@ class Piece():
         temp_piece.y = y
         board.board_[self.y][self.x] = None
         board.board_[y][x] = temp_piece
+        temp_piece.hasmoved = True
 
 class Pawn(Piece):
-    def __init__(self, color, x, y):
+    def __init__(self, color, x, y, h):
+        """
+        d: direction to move, 0 if up, 1 if down
+        """
         super().__init__(color, x, y)
+        self.heading = h
         if (color == 'w'):
             self.sprite = 'resources\\wpawn.png'
         else: self.sprite = 'resources\\bpawn.png'
@@ -195,11 +201,10 @@ class Pawn(Piece):
             each valid move
         """
         plegal_moves = set()
-
-        direction = {'w': -1, 'b': 1}
+        direction = {0: -1, 1: 1}
         col = self.color
 
-        possible_y = self.y + direction[col]
+        possible_y = self.y + direction[self.heading] # One square ahead of the pawn
         """
         Cannot use the chk_move method, as the pawn cannot capture piece in occupied
         squares directly ahead of it
@@ -207,6 +212,11 @@ class Pawn(Piece):
         piece = board.board_[possible_y][self.x]
         if (possible_y >= 0 or possible_y <= 7) and piece == None:
             plegal_moves.add((self.x, possible_y))
+            if self.hasmoved == False: # If the pawn hasn't moved yet, check if it can move 2 spaces
+                double_y = possible_y + direction[self.heading]
+                piece = board.board_[double_y][self.x]
+                if (double_y >= 0 or double_y <= 7) and piece == None:
+                    plegal_moves.add((self.x, double_y))
 
         # Out of bounds or occupied, so check if the diagonally adjacent squares contain an enemy piece
         if (self.x+1 <= 7): # Check if the piece you're looking at is off the board

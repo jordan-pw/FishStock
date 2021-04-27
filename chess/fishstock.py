@@ -22,6 +22,8 @@ white_check = False
 selected = False # True when a piece is selected
 selection = None # Currently selected piece
 turn = 'w' # w when White's move, b when Black's move
+playerc = 'b'
+computerc = 'w'
 color = (255, 0, 0)
 
 def draw_pieces(board):
@@ -48,35 +50,58 @@ def show_position():
     screen.blit(select, (x, y))
 
 def highlight_moves(moveset):
+    """
+    Highlights all of the squares in a given set of moves
+    Args:
+        A piece's legal_move set()
+    """
     for move in moveset:
         screen.blit(highlight, (move[0]*100 + board_offset, move[1]*100 + board_offset))
 
 def select_piece(piece):
+    """
+    Selects a piece, and calls the highlight_moves method
+    Args:
+        A piece object
+    """
     if piece is not None:
         screen.blit(highlight, (piece.x*100 + board_offset, piece.y*100 + board_offset))
         highlight_moves(piece.legal_moves)
 
 def check_square():
+    """
+    Checks the square of the board the mouse is currently over,
+    selecting a piece if there is one
+    Returns:
+        selection: The object that was under the mouse at the time of checking
+    """
     x, y = pygame.mouse.get_pos()
     selection = the_board.board_[y // 100][x // 100]
-    if selection is not None and selection.color == 'w':
+    if selection is not None and selection.color == playerc:
         return selection
     if selection is None:
         return None
 
 def attempt_move(piece):
+    """
+    Attempts to make a move if the target coordinate is a legal move.
+    Returns:
+        True if the move is made, False otherwise
+    """
     x, y = pygame.mouse.get_pos()
     x = x // 100
     y = y // 100
-    if (piece is not None) and(x, y) in piece.legal_moves:
+    if (piece is not None) and (x, y) in piece.legal_moves:
         piece.move(the_board, x, y)
-    initialize_moves()
-    update_moves()
+        initialize_moves()
+        update_moves()
+        return True
+    return False
 
 
 
 
-the_board = Board()
+the_board = Board(computerc, playerc)
 all = the_board.board_
 
 def initialize_moves():
@@ -125,11 +150,13 @@ while run:
                 if selection is not None:
                     selected = True
             if selected == True:
-                attempt_move(selection)
-                selection = check_square()
-                if selection is not None:
-                    selected = True
-                else: selected = False
+                if attempt_move(selection):
+                    selected = False
+                    selection = None
+                else:
+                    selection = check_square()
+                    if selection is not None:
+                        selected = True
 
     # Render pieces and other bits
     screen.blit(surface, (0,0))
