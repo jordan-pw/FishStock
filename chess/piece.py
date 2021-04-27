@@ -120,7 +120,13 @@ class Piece():
         """
         Generates the legal moveset of any given piece
         Legal meaning not putting the King into check
+        Simulates the board for each possible pseudo-legal
+        move that can be made by every single piece
+        Very slow but it works
+        Returns:
+            legal_moves: A set of tuples contain the legal moves for a given piece
         """
+        self.legal_moves = set() # Reset the legal moves
         pseudo_moves = self.generate_moves(board)
         
         for move in pseudo_moves:
@@ -163,6 +169,13 @@ class Piece():
                 if (testboard.black_king.is_in_check == False):
                     self.legal_moves.add((testpiece.x, testpiece.y))
         return self.legal_moves
+
+    def move(self, board, x, y):
+        temp_piece = copy.copy(self)
+        temp_piece.x = x
+        temp_piece.y = y
+        board.board_[self.y][self.x] = None
+        board.board_[y][x] = temp_piece
 
 class Pawn(Piece):
     def __init__(self, color, x, y):

@@ -12,18 +12,22 @@ screen = pygame.display.set_mode((width, height))
 
 # Load in images
 surface = pygame.image.load('resources\\Board2.png').convert()
+select = pygame.image.load('resources\\selection.png').convert_alpha()
+highlight = pygame.image.load('resources\\highlight.png').convert_alpha()
 
-# Render images
-rect = surface.get_rect()
-rect = rect.move((0, 0))
-screen.blit(surface, rect)
 
 # Set variables
 black_check = False # True when king is in check
 white_check = False
+selected = False # True when a piece is selected
+selection = None # Currently selected piece
 turn = 'w' # w when White's move, b when Black's move
+color = (255, 0, 0)
 
 def draw_pieces(board):
+    """
+    Loops through all the pieces on the board and draws them
+    """
     pieces = board.board_
     for i in range(len(pieces)):
         for j in range(len(pieces[i])):
@@ -33,6 +37,43 @@ def draw_pieces(board):
                 posy = pieces[i][j].y
                 psprite = pygame.image.load(pieces[i][j].sprite).convert()
                 screen.blit(psprite, (board_offset+(posx*100), board_offset+(posy*100)))
+
+def show_position():
+    """
+    Highlights the square the mouse is currently over
+    """
+    x, y = pygame.mouse.get_pos()
+    x = ((x // 100) * 100) + board_offset - 1
+    y = ((y // 100) * 100) + board_offset - 1
+    screen.blit(select, (x, y))
+
+def highlight_moves(moveset):
+    for move in moveset:
+        screen.blit(highlight, (move[0]*100 + board_offset, move[1]*100 + board_offset))
+
+def select_piece(piece):
+    if piece is not None:
+        screen.blit(highlight, (piece.x*100 + board_offset, piece.y*100 + board_offset))
+        highlight_moves(piece.legal_moves)
+
+def check_square():
+    x, y = pygame.mouse.get_pos()
+    selection = the_board.board_[y // 100][x // 100]
+    if selection is not None and selection.color == 'w':
+        return selection
+    if selection is None:
+        return None
+
+def attempt_move(piece):
+    x, y = pygame.mouse.get_pos()
+    x = x // 100
+    y = y // 100
+    if (piece is not None) and(x, y) in piece.legal_moves:
+        piece.move(the_board, x, y)
+    initialize_moves()
+    update_moves()
+
+
 
 
 the_board = Board()
@@ -60,6 +101,8 @@ def update_moves():
                 print(item)
                 for move in item.legal_moves:
                     print(move[0], move[1])
+    the_board.black_king.check_status()
+    the_board.white_king.check_status()
 
 initialize_moves()
 update_moves()
@@ -74,12 +117,31 @@ while run:
             pygame.quit()
             sys.exit()
         # pylint: enable=no-member
+        
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            print(selected)
+            if selected == False:
+                selection = check_square()
+                if selection is not None:
+                    selected = True
+            if selected == True:
+                attempt_move(selection)
+                selection = check_square()
+                if selection is not None:
+                    selected = True
+                else: selected = False
+
+    # Render pieces and other bits
+    screen.blit(surface, (0,0))
+    select_piece(selection)
     draw_pieces(the_board)
+    show_position()
     pygame.display.update()
 
     # Gameplay loop
     chk_black_check = the_board.black_king.attacked_by
     chk_white_check = the_board.white_king.attacked_by
+    # Generate caption
     turn_string = "White's turn"
     if (the_board.black_king.is_in_check) or (the_board.white_king.is_in_check):
         pygame.display.set_caption('Chess! (Check) ' + turn_string)
@@ -92,70 +154,4 @@ while run:
         turn_string = "Black's turn"
     
 
-# Board evaluation initiliazitaion
-pawn_map = [
-    0, 0, 0, 0, 0, 0, 0, 0,
-    5, 10, 10, -20, -20, 10, 10, 5,
-    5, -5, -10, 0, 0, -10, -5, 5,
-    0, 0, 0, 20, 20, 0, 0, 0,
-    5, 5, 10, 25, 25, 10, 5, 5,
-    10, 10, 20, 30, 30, 20, 10, 10,
-    50, 50, 50, 50, 50, 50, 50, 50,
-    0, 0, 0, 0, 0, 0, 0, 0,
-]
-
-knight_map = [
-    -50, -40, -30, -30, -30, -30, -40, -50,
-    -40, -20, 0, 5, 5, 0, -20, -40,
-    -30, 5, 10, 15, 15, 10, 5, -30,
-    -30, 0, 15, 20, 20, 15, 0, -30,
-    -30, 5, 15, 20, 20, 15, 5, -30,
-    -30, 0, 10, 15, 15, 10, 0, -30,
-    -40, -20, 0, 0, 0, 0, -20, -40,
-    -50, -40, -30, -30, -30, -30, -40, -50,
-]
-
-bishop_map = [
-    -20, -10, -10, -10, -10, -10, -10, -20,
-    -10, 5, 0, 0, 0, 0, 5, -10,
-    -10, 10, 10, 10, 10, 10, 10, -10,
-    -10, 0, 10, 10, 10, 10, 0, -10,
-    -10, 5, 5, 10, 10, 5, 5, -10,
-    -10, 0, 5, 10, 10, 5, 0, -10,
-    -10, 0, 0, 0, 0, 0, 0, -10,
-    -20, -10, -10, -10, -10, -10, -10, -20,
-]
-
-rook_map = [
-    0, 0, 0, 5, 5, 0, 0, 0,
-    -5, 0, 0, 0, 0, 0, 0, -5,
-    -5, 0, 0, 0, 0, 0, 0, -5,
-    -5, 0, 0, 0, 0, 0, 0, -5,
-    -5, 0, 0, 0, 0, 0, 0, -5,
-    -5, 0, 0, 0, 0, 0, 0, -5,
-    5, 10, 10, 10, 10, 10, 10, 5,
-    0, 0, 0, 0, 0, 0, 0, 0,
-]
-
-queen_map = [
-    -20, -10, -10, -5, -5, -10, -10, -20,
-    -10, 0, 0, 0, 0, 0, 0, -10,
-    -10, 5, 5, 5, 5, 5, 0, -10,
-    0, 0, 5, 5, 5, 5, 0, -5,
-    -5, 0, 5, 5, 5, 5, 0, -5,
-    -10, 0, 5, 5, 5, 5, 0, -10,
-    -10, 0, 0, 0, 0, 0, 0, -10,
-    -20, -10, -10, -5, -5, -10, -10, -20,
-]
-
-king_map = [
-    20, 30, 10, 0, 0, 10, 30, 20,
-    20, 20, 0, 0, 0, 0, 20, 20,
-    -10, -20, -20, -20, -20, -20, -20, -10,
-    -20, -30, -30, -40, -40, -30, -30, -20,
-    -30, -40, -40, -50, -50, -40, -40, -30,
-    -30, -40, -40, -50, -50, -40, -40, -30,
-    -30, -40, -40, -50, -50, -40, -40, -30,
-    -30, -40, -40, -50, -50, -40, -40, -30
-]
 
