@@ -22,6 +22,7 @@ def chk_move(self, color, x, y, board):
     else:
         if piece.color != color:
             piece.attacked_by.add((self.x, self.y))
+            self.attacking.add((x, y))
             # Enemy piece
             return True
         if piece.color == color:
@@ -48,7 +49,6 @@ def get_straight_moves(self,board):
             if chk_move(self, self.color, self.x, possible_y, board):
                 if (board.board_[possible_y][self.x] != None):
                     plegal_moves.add((self.x, possible_y))
-                    self.attacking.add((self.x, possible_y))
                     break
                 else:
                     plegal_moves.add((self.x, possible_y))
@@ -64,7 +64,6 @@ def get_straight_moves(self,board):
             if chk_move(self, self.color, possible_x, self.y, board):
                 if (board.board_[self.y][possible_x] != None): # If there is an enemy piece
                     plegal_moves.add((possible_x, self.y))
-                    self.attacking.add((possible_x, self.y))
                     break
                 else: # If board is empty here
                     plegal_moves.add((possible_x, self.y))
@@ -92,7 +91,6 @@ def get_diag_moves(self,board):
             if chk_move(self, self.color, possible_x, possible_y, board):
                 if (board.board_[possible_y][possible_x] != None): # If there is an enemy piece
                     plegal_moves.add((possible_x, possible_y))
-                    self.attacking.add((possible_x, possible_y))
                     break
                 else: # If the board is empty here
                     plegal_moves.add((possible_x, possible_y))
@@ -132,13 +130,15 @@ class Piece():
         
         for move in pseudo_moves:
             # Copy the current piece
-            testpiece = copy.copy(self)
+            copyx = copy.copy(self.x)
+            copyy = copy.copy(self.y)
+            testpiece = copy.deepcopy(self)
             testpiece.x = move[0]
             testpiece.y = move[1]
             # Copy the board
             testboard = copy.deepcopy(board)
             # Remove the current piece from the board
-            testboard.board_[self.y][self.x] = None
+            testboard.board_[copyy][copyx] = None
             # Move it to the test location
             testboard.board_[move[1]][move[0]] = testpiece
 
@@ -149,7 +149,7 @@ class Piece():
                 for item in row:
                     if item is not None:
                         item.attacked_by = set()
-                        item.generate_moves(testboard)
+                        item.attacking = set()
             # Since this resets the attacked_by status of pieces
             # We have to do it again
             # This is terrible
@@ -188,7 +188,7 @@ class Piece():
 class Pawn(Piece):
     def __init__(self, color, x, y, h):
         """
-        d: direction to move, 0 if up, 1 if down
+        h: direction to move, 0 if up, 1 if down
         """
         super().__init__(color, x, y)
         self.heading = h
@@ -210,19 +210,24 @@ class Pawn(Piece):
         direction = {0: -1, 1: 1}
         col = self.color
 
-        possible_y = self.y + direction[self.heading] # One square ahead of the pawn
+        if self.heading == 0:
+            possible_y = max(self.y + direction[self.heading], 0) # One square ahead of the pawn
+        if self.heading == 1:
+            possible_y = min(self.y + direction[self.heading], 7)
         """
         Cannot use the chk_move method, as the pawn cannot capture piece in occupied
         squares directly ahead of it
         """
-        piece = board.board_[possible_y][self.x]
-        if (possible_y >= 0 or possible_y <= 7) and piece == None:
-            plegal_moves.add((self.x, possible_y))
-            if self.hasmoved == False: # If the pawn hasn't moved yet, check if it can move 2 spaces
-                double_y = possible_y + direction[self.heading]
-                piece = board.board_[double_y][self.x]
-                if (double_y >= 0 or double_y <= 7) and piece == None:
-                    plegal_moves.add((self.x, double_y))
+        if (possible_y >= 0 or possible_y <= 7):
+            print(possible_y, self.x)
+            piece = board.board_[possible_y][self.x]
+            if piece == None:
+                plegal_moves.add((self.x, possible_y))
+                if self.hasmoved == False: # If the pawn hasn't moved yet, check if it can move 2 spaces
+                    double_y = possible_y + direction[self.heading]
+                    piece = board.board_[double_y][self.x]
+                    if (double_y >= 0 or double_y <= 7) and piece == None:
+                        plegal_moves.add((self.x, double_y))
 
         # Out of bounds or occupied, so check if the diagonally adjacent squares contain an enemy piece
         if (self.x+1 <= 7): # Check if the piece you're looking at is off the board
@@ -283,6 +288,7 @@ class Knight(Piece):
             if chk_move(self, self.color, possible_x, possible_y, board):
                 plegal_moves.add((possible_x, possible_y))
                 if (board.board_[possible_y][possible_x] is not None) and (board.board_[possible_y][possible_x].color != self.color):
+                    board.board_[possible_y][possible_x].attacked_by.add((self.x, self.y))
                     self.attacking.add((possible_x, possible_y))
         return plegal_moves
 
@@ -305,6 +311,7 @@ class King(Piece):
             if chk_move(self, self.color, possible_x, possible_y, board):
                 plegal_moves.add((possible_x, possible_y))
                 if (board.board_[possible_y][possible_x] is not None) and (board.board_[possible_y][possible_x].color != self.color):
+                    board.board_[possible_y][possible_x].attacked_by.add((self.x, self.y))
                     self.attacking.add((possible_x, possible_y))
         return plegal_moves
 

@@ -14,6 +14,8 @@ screen = pygame.display.set_mode((width, height))
 surface = pygame.image.load('resources\\Board2.png').convert()
 select = pygame.image.load('resources\\selection.png').convert_alpha()
 highlight = pygame.image.load('resources\\highlight.png').convert_alpha()
+highlightred = pygame.image.load('resources\\highlight_red.png').convert_alpha()
+highlightgreen = pygame.image.load('resources\\highlight_green.png').convert_alpha()
 
 
 # Set variables
@@ -21,6 +23,7 @@ black_check = False # True when king is in check
 white_check = False
 selected = False # True when a piece is selected
 selection = None # Currently selected piece
+debug = True # Enables extra highlighting, and allows you to move both sides
 turn = 'w' # w when White's move, b when Black's move
 playerc = 'w'
 computerc = 'b'
@@ -67,6 +70,11 @@ def select_piece(piece):
     if piece is not None:
         screen.blit(highlight, (piece.x*100 + board_offset, piece.y*100 + board_offset))
         highlight_moves(piece.legal_moves)
+        if debug == True:
+            for attack in piece.attacked_by:
+                screen.blit(highlightgreen, (attack[0]*100 + board_offset, attack[1]*100 + board_offset))
+            for target in piece.attacking:
+                screen.blit(highlightred, (target[0]*100 + board_offset, target[1]*100 + board_offset))
 
 def check_square():
     """
@@ -119,6 +127,13 @@ def update_moves():
         for item in row:
             if item is not None:
                 item.attacked_by = set()
+                item.attacking = set()
+
+    initialize_moves()
+    
+    for row in all:
+        for item in row:
+            if item is not None:
                 item.generate_legal_moves(the_board)
     the_board.bottom_king.check_status()
     the_board.top_king.check_status()
