@@ -142,17 +142,16 @@ class Piece():
             # Move it to the test location
             testboard.board_[move[1]][move[0]] = testpiece
 
-            # Generate the pseudo-legal moves for the testboard pieces
-            # This entire method is extremely slow, will need to optimize
-            # This is to check and see if the move results in the king being taken out of check
+            # Reset the attacked_by and attacking sets,
+            # They need to reset each move
             for row in testboard.board_:
                 for item in row:
                     if item is not None:
                         item.attacked_by = set()
                         item.attacking = set()
-            # Since this resets the attacked_by status of pieces
-            # We have to do it again
-            # This is terrible
+            # Generate the pseudo-legal moves for the testboard pieces
+            # This entire method is probably inefficient, will need to optimize
+            # This is to check and see if the move results in the king being taken out of check
             for row in testboard.board_:
                 for item in row:
                     if item is not None:
