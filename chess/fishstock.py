@@ -69,6 +69,7 @@ def select_piece(piece):
     """
     if piece is not None:
         screen.blit(highlight, (piece.x*100 + board_offset, piece.y*100 + board_offset))
+        piece.generate_legal_moves(the_board)
         highlight_moves(piece.legal_moves)
         if debug == True:
             for attack in piece.attacked_by:

@@ -141,6 +141,9 @@ class Piece():
             testboard.board_[copyy][copyx] = None
             # Move it to the test location
             testboard.board_[move[1]][move[0]] = testpiece
+            board.bottom_king.check_status()
+            board.top_king.check_status()
+
 
             # Reset the attacked_by and attacking sets,
             # They need to reset each move
