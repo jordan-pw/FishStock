@@ -144,7 +144,8 @@ class Piece():
             board.bottom_king.check_status()
             board.top_king.check_status()
 
-
+            testboard.bottom_king.check_status()
+            testboard.top_king.check_status()
             # Reset the attacked_by and attacking sets,
             # They need to reset each move
             for row in testboard.board_:
@@ -221,7 +222,6 @@ class Pawn(Piece):
         squares directly ahead of it
         """
         if (possible_y >= 0 or possible_y <= 7):
-            print(possible_y, self.x)
             piece = board.board_[possible_y][self.x]
             if piece == None:
                 plegal_moves.add((self.x, possible_y))

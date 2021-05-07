@@ -135,7 +135,7 @@ def update_moves():
     for row in all:
         for item in row:
             if item is not None:
-                item.generate_legal_moves(the_board)
+                item.generate_legal_moves(the_board)    
     the_board.bottom_king.check_status()
     the_board.top_king.check_status()
 
@@ -154,7 +154,8 @@ while run:
         # pylint: enable=no-member
         
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            print(selected)
+            # print(selected)
+            print(the_board.bottom_king.attacked_by)
             if selected == False:
                 selection = check_square()
                 if selection is not None:
